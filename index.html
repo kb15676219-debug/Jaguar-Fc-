@@ -4,839 +4,215 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jaguar FC</title>
-    <!-- Tailwind CSS for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React and ReactDOM -->
+    
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <!-- Babel to compile your React code live in the browser -->
+    
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Lucide Icons mapping replacement -->
-    <script>
-        // Mocking window.storage for demo-level local compatibility
-        window.storage = {
-            get: async (key, fallback) => {
-                const val = localStorage.getItem(key);
-                return { value: val };
-            },
-            set: async (key, val) => {
-                localStorage.setItem(key, val);
-                return true;
-            }
-        };
-    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="bg-[#F4F9F4] text-[#0B1A14]">
+
     <div id="root"></div>
 
-    <!-- Your unchanged script loaded through Babel -->
     <script type="text/babel">
-    const { useState, useEffect } = React;
+        // Lucide Icons Mock fallback since raw ESM imports don't work natively like this
+        const Lock = () => <span>🔒</span>;
+        const LogOut = () => <span>🚪</span>;
+        const Pencil = () => <span>✏️</span>;
+        const Trash2 = () => <span>🗑️</span>;
+        const Plus = () => <span>➕</span>;
+        const Check = () => <span>✅</span>;
+        const X = () => <span>❌</span>;
+        const ShieldCheck = () => <span>🛡️</span>;
+        const ArrowLeft = () => <span>⬅️</span>;
+        const User = () => <span>👤</span>;
 
-    // Direct Lucide-React Icon Stand-ins for standalone compilation compatibility
-    const Lock = () => <span>🔒</span>;
-    const LogOut = () => <span>🚪</span>;
-    const Pencil = () => <span>✏️</span>;
-    const Trash2 = () => <span>🗑️</span>;
-    const Plus = () => <span>➕</span>;
-    const Check = () => <span>✅</span>;
-    const X = () => <span>❌</span>;
-    const ShieldCheck = () => <span>🛡️</span>;
-    const ArrowLeft = () => <span>⬅️</span>;
-    const User = () => <span>👤</span>;
-
-    const COLORS = {
-      pitch: "#15392B",
-      turf: "#2D6A4F",
-      bright: "#52B788",
-      chalk: "#F4F9F4",
-      ink: "#0B1A14",
-      amber: "#FFB703",
-      line: "#D8E2DC",
-    };
-
-    const POSITIONS = ["Goalkeeper", "Defender", "Midfielder", "Forward"];
-    const TEAM_COLORS = ["#E63946", "#457B9D", "#F4A261", "#7209B7", "#2A9D8F", "#E76F51", "#3A86FF", "#FB5607"];
-
-    const POSITION_ATTRS = {
-      Goalkeeper:  { key: ["Saves","Clean sheets","Conceded"], icon: "🧤" },
-      Defender:    { key: ["Tackles","Clearances","Goals"],    icon: "🛡️" },
-      Midfielder:  { key: ["Assists","Goals","Key passes"],    icon: "⚙️" },
-      Forward:     { key: ["Goals","Assists","Shots"],         icon: "⚡" },
-    };
-
-    const today = () => new Date().toISOString().slice(0, 10);
-    const fontDisplay = "'Bebas Neue', sans-serif";
-    const fontMono = "'Space Mono', monospace";
-
-    function buildSeed() {
-      const teams = [
-        { id: "t1", name: "Riverside FC",     color: TEAM_COLORS[0] },
-        { id: "t2", name: "Northgate United", color: TEAM_COLORS[1] },
-        { id: "t3", name: "Harbor City SC",   color: TEAM_COLORS[2] },
-        { id: "t4", name: "Ironwood Athletic",color: TEAM_COLORS[3] },
-      ];
-      const players = [
-        { id:"p1", name:"Mateo Silva",   email:"mateo@example.com",  age:24, position:"Forward",    team:"t1", status:"approved", goals:14, assists:5,  appearances:12, joined:"2026-03-02", bio:"Clinical finisher with an eye for goal. Top scorer two seasons running." },
-        { id:"p2", name:"Jonah Reyes",   email:"jonah@example.com",  age:27, position:"Midfielder", team:"t1", status:"approved", goals:6,  assists:11, appearances:13, joined:"2026-03-04", bio:"Creative playmaker who pulls the strings from the centre of the park." },
-        { id:"p3", name:"Owen Pratt",    email:"owen@example.com",   age:22, position:"Defender",   team:"t2", status:"approved", goals:1,  assists:2,  appearances:11, joined:"2026-03-05", bio:"Composed on the ball and reads the game well for his age." },
-        { id:"p4", name:"Tariq Brooks",  email:"tariq@example.com",  age:29, position:"Forward",    team:"t2", status:"approved", goals:9,  assists:3,  appearances:12, joined:"2026-03-06", bio:"Physical presence up front. Thrives on high balls and hold-up play." },
-        { id:"p5", name:"Felix Adeyemi", email:"felix@example.com",  age:25, position:"Goalkeeper", team:"t3", status:"approved", goals:0,  assists:0,  appearances:13, joined:"2026-03-09", bio:"Commanding shot-stopper with excellent distribution from the back." },
-        { id:"p6", name:"Caleb Nguyen",  email:"caleb@example.com",  age:23, position:"Midfielder", team:"t3", status:"approved", goals:7,  assists:8,  appearances:12, joined:"2026-03-10", bio:"Box-to-box midfielder with tireless energy and an eye for a late run." },
-        { id:"p7", name:"Dario Conti",   email:"dario@example.com",  age:26, position:"Defender",   team:"t4", status:"approved", goals:2,  assists:1,  appearances:10, joined:"2026-03-12", bio:"Aggressive tackler who leads the backline with authority." },
-        { id:"p8", name:"Sam Whitfield", email:"sam@example.com",    age:31, position:"Forward",    team:"t4", status:"approved", goals:11, assists:4,  appearances:13, joined:"2026-03-12", bio:"Veteran striker. Two decades of experience keep him one step ahead." },
-        { id:"p9", name:"Iris Hoffman",  email:"iris@example.com",   age:21, position:"Midfielder", team:"",   status:"pending",  preferredTeam:"t2", goals:0, assists:0, appearances:0, joined:"2026-06-12", bio:"" },
-      ];
-      const matches = [
-        { id:"m1", date:"2026-05-02", home:"t1", away:"t3", homeScore:3, awayScore:1 },
-        { id:"m2", date:"2026-05-09", home:"t2", away:"t4", homeScore:2, awayScore:2 },
-        { id:"m3", date:"2026-05-16", home:"t3", away:"t4", homeScore:0, awayScore:1 },
-        { id:"m4", date:"2026-05-23", home:"t1", away:"t2", homeScore:4, awayScore:2 },
-        { id:"m5", date:"2026-06-27", home:"t4", away:"t1", homeScore:null, awayScore:null },
-        { id:"m6", date:"2026-07-04", home:"t2", away:"t3", homeScore:null, awayScore:null },
-      ];
-      return { teams, players, matches, admin: { username:"admin", password:"admin123" } };
-    }
-
-    function fmtDate(d) {
-      return new Date(d + "T00:00:00").toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric" });
-    }
-
-    // ── Stat bar ──────────────────────────────────────────────────────────────────
-    function StatBar({ label, value, max, color }) {
-      const pct = Math.min(100, max ? (value / max) * 100 : 0);
-      return (
-        <div>
-          <div className="flex justify-between text-xs mb-1" style={{ fontFamily: fontMono }}>
-            <span className="opacity-60 uppercase tracking-wide">{label}</span>
-            <span className="font-bold">{value}</span>
-          </div>
-          <div className="h-1.5 rounded-full" style={{ background: COLORS.line }}>
-            <div className="h-1.5 rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: color }} />
-          </div>
-        </div>
-      );
-    }
-
-    // ── Player Profile Page ───────────────────────────────────────────────────────
-    function PlayerProfile({ player, team, allPlayers, matches, onBack }) {
-      const posInfo = POSITION_ATTRS[player.position] || POSITION_ATTRS.Forward;
-      const teamMatches = matches.filter(
-        (m) => (m.home === player.team || m.away === player.team) && m.homeScore !== null
-      ).sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 5);
-
-      const leagueMax = {
-        goals:       Math.max(...allPlayers.map((p) => p.goals), 1),
-        assists:     Math.max(...allPlayers.map((p) => p.assists), 1),
-        appearances: Math.max(...allPlayers.map((p) => p.appearances), 1),
-      };
-
-      const goalContrib = player.goals + player.assists;
-      const leagueRank  = [...allPlayers].sort((a,b)=>b.goals-a.goals).findIndex(p=>p.id===player.id)+1;
-
-      return (
-        <div>
-          {/* Back */}
-          <button onClick={onBack} className="flex items-center gap-1.5 text-sm mb-6 opacity-60 hover:opacity-100 transition-opacity" style={{ fontFamily: fontMono }}>
-            <ArrowLeft size={15} /> Back
-          </button>
-
-          {/* Hero banner */}
-          <div className="rounded-2xl overflow-hidden mb-6" style={{ background: COLORS.pitch }}>
-            <div className="h-2" style={{ background: team ? team.color : COLORS.bright }} />
-            <div className="p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5">
-              {/* Avatar */}
-              <Avatar player={player} team={team} size={80} />
-              {/* Info */}
-              <div className="flex-1">
-                <p className="text-xs uppercase tracking-[0.2em] mb-1" style={{ color: team ? team.color : COLORS.bright, fontFamily: fontMono }}>
-                  {player.position} · {team ? team.name : "Unassigned"}
-                </p>
-                <h1 className="text-4xl leading-tight" style={{ fontFamily: fontDisplay, color: COLORS.chalk }}>{player.name}</h1>
-                {player.bio && <p className="mt-2 text-sm max-w-md" style={{ color: COLORS.line }}>{player.bio}</p>}
-              </div>
-              {/* Quick facts */}
-              <div className="flex sm:flex-col gap-4 sm:gap-2 text-right">
-                <div><span className="text-2xl font-bold" style={{ fontFamily: fontDisplay, color: COLORS.amber }}>#{leagueRank}</span><br/><span className="text-xs opacity-50" style={{ fontFamily: fontMono, color: COLORS.chalk }}>Scorer rank</span></div>
-                <div><span className="text-2xl font-bold" style={{ fontFamily: fontDisplay, color: COLORS.chalk }}>{player.age}</span><br/><span className="text-xs opacity-50" style={{ fontFamily: fontMono, color: COLORS.chalk }}>Age</span></div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-6">
-            {/* Stat bars */}
-            <div className="rounded-xl border p-5 space-y-4" style={{ borderColor: COLORS.line }}>
-              <h2 className="text-xs uppercase tracking-widest opacity-50 mb-3" style={{ fontFamily: fontMono }}>Season stats</h2>
-              <StatBar label="Appearances" value={player.appearances} max={leagueMax.appearances} color={team?.color || COLORS.turf} />
-              <StatBar label="Goals"       value={player.goals}       max={leagueMax.goals}       color={COLORS.amber} />
-              <StatBar label="Assists"     value={player.assists}     max={leagueMax.assists}     color={COLORS.bright} />
-              <div className="pt-3 border-t flex justify-between text-sm" style={{ borderColor: COLORS.line, fontFamily: fontMono }}>
-                <span className="opacity-50">Goal contributions</span>
-                <span className="font-bold">{goalContrib}</span>
-              </div>
-            </div>
-
-            {/* Recent club matches */}
-            <div className="rounded-xl border p-5" style={{ borderColor: COLORS.line }}>
-              <h2 className="text-xs uppercase tracking-widest opacity-50 mb-3" style={{ fontFamily: fontMono }}>Recent club results</h2>
-              {teamMatches.length === 0 ? (
-                <p className="text-sm opacity-40">No completed matches yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {teamMatches.map((m) => {
-                    const isHome = m.home === player.team;
-                    const myScore = isHome ? m.homeScore : m.awayScore;
-                    const oppScore = isHome ? m.awayScore : m.homeScore;
-                    const oppTeam = allPlayers; // just need match data
-                    const result = myScore > oppScore ? "W" : myScore < oppScore ? "L" : "D";
-                    const rColor = result === "W" ? COLORS.turf : result === "L" ? "#C62828" : COLORS.amber;
-                    return (
-                      <div key={m.id} className="flex items-center gap-3 text-sm">
-                        <span className="w-5 h-5 rounded-full text-xs flex items-center justify-center font-bold text-white flex-shrink-0" style={{ background: rColor, fontFamily: fontMono }}>
-                          {result}
-                        </span>
-                        <span className="opacity-60 text-xs w-24" style={{ fontFamily: fontMono }}>{fmtDate(m.date)}</span>
-                        <span className="flex-1">{isHome ? "vs" : "@"} <span className="font-medium">{/* opponent name */}{isHome ? m.away : m.home}</span></span>
-                        <span style={{ fontFamily: fontMono }}>{myScore}–{oppScore}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Details card */}
-            <div className="rounded-xl border p-5 sm:col-span-2" style={{ borderColor: COLORS.line }}>
-              <h2 className="text-xs uppercase tracking-widest opacity-50 mb-4" style={{ fontFamily: fontMono }}>Player details</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-                {[["Position", player.position], ["Club", team?.name || "—"], ["Age", player.age || "—"], ["Joined", fmtDate(player.joined)]].map(([l, v]) => (
-                  <div key={l}>
-                    <p className="text-xs opacity-50 uppercase tracking-wide mb-0.5" style={{ fontFamily: fontMono }}>{l}</p>
-                    <p className="font-semibold">{v}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // ── Avatar helpers ────────────────────────────────────────────────────────────
-    function initials(name) {
-      return name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
-    }
-
-    function Avatar({ player, team, size = 48, className = "" }) {
-      if (player.avatar) {
-        return (
-          <img
-            src={player.avatar}
-            alt={player.name}
-            className={`rounded-full object-cover flex-shrink-0 ${className}`}
-            style={{ width: size, height: size, border: `2px solid ${team ? team.color : COLORS.bright}` }}
-          />
-        );
-      }
-      return (
-        <div
-          className={`rounded-full flex items-center justify-center flex-shrink-0 font-bold ${className}`}
-          style={{
-            width: size, height: size,
-            background: team ? team.color + "33" : "#ffffff22",
-            border: `2px solid ${team ? team.color : COLORS.bright}`,
-            color: team ? team.color : COLORS.bright,
-            fontSize: size * 0.32,
-          }}
-        >
-          {initials(player.name)}
-        </div>
-      );
-    }
-
-    async function resizeToBase64(file, maxSize = 200) {
-      return new Promise((resolve) => {
-        const img = new Image();
-        const url = URL.createObjectURL(file);
-        img.onload = () => {
-          const scale = Math.min(maxSize / img.width, maxSize / img.height, 1);
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width * scale;
-          canvas.height = img.height * scale;
-          canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
-          URL.revokeObjectURL(url);
-          resolve(canvas.toDataURL("image/jpeg", 0.8));
+        const COLORS = {
+          pitch: "#15392B",
+          turf: "#2D6A4F",
+          bright: "#52B788",
+          chalk: "#F4F9F4",
+          ink: "#0B1A14",
+          amber: "#FFB703",
+          line: "#D8E2DC",
         };
-        img.src = url;
-      });
-    }
 
-    // ── Player Card (clickable) ───────────────────────────────────────────────────
-    function PlayerCard({ player, team, idx, onClick }) {
-      return (
-        <button onClick={onClick} className="relative rounded-xl overflow-hidden bg-white shadow-sm border text-left w-full transition-shadow hover:shadow-md" style={{ borderColor: COLORS.line }}>
-          <div className="h-2" style={{ background: team ? team.color : COLORS.bright }} />
-          <div className="p-4 flex items-center gap-3">
-            <Avatar player={player} team={team} size={48} />
-            <div className="min-w-0">
-              <div className="text-xs font-bold leading-none mb-1" style={{ fontFamily: fontDisplay, color: COLORS.ink, fontSize: 22 }}>
-                {String(idx + 1).padStart(2, "0")}
+        const POSITIONS = ["Goalkeeper", "Defender", "Midfielder", "Forward"];
+        const TEAM_COLORS = ["#E63946", "#457B9D", "#F4A261", "#7209B7", "#2A9D8F", "#E76F51", "#3A86FF", "#FB5607"];
+
+        const POSITION_ATTRS = {
+          Goalkeeper:  { key: ["Saves","Clean sheets","Conceded"], icon: "🧤" },
+          Defender:    { key: ["Tackles","Clearances","Goals"],    icon: "🛡️" },
+          Midfielder:  { key: ["Assists","Goals","Key passes"],    icon: "⚙️" },
+          Forward:     { key: ["Goals","Assists","Shots"],         icon: "⚡" },
+        };
+
+        const today = () => new Date().toISOString().slice(0, 10);
+        const fontDisplay = "'Bebas Neue', sans-serif";
+        const fontMono = "'Space Mono', monospace";
+
+        // Simple localStorage wrapper replacement for window.storage
+        const localStorageBackup = {
+            get: async (key) => ({ value: localStorage.getItem(key) }),
+            set: async (key, val) => localStorage.setItem(key, val)
+        };
+        const storageEngine = window.storage || localStorageBackup;
+
+        function buildSeed() {
+          return {
+            teams: [
+              { id: "t1", name: "Riverside FC",     color: TEAM_COLORS[0] },
+              { id: "t2", name: "Northgate United", color: TEAM_COLORS[1] },
+              { id: "t3", name: "Harbor City SC",   color: TEAM_COLORS[2] },
+              { id: "t4", name: "Ironwood Athletic",color: TEAM_COLORS[3] },
+            ],
+            players: [
+              { id:"p1", name:"Mateo Silva",   email:"mateo@example.com",  age:24, position:"Forward",    team:"t1", status:"approved", goals:14, assists:5,  appearances:12, joined:"2026-03-02", bio:"Clinical finisher with an eye for goal." },
+              { id:"p2", name:"Jonah Reyes",   email:"jonah@example.com",  age:27, position:"Midfielder", team:"t1", status:"approved", goals:6,  assists:11, appearances:13, joined:"2026-03-04", bio:"Creative playmaker." },
+              { id:"p3", name:"Owen Pratt",    email:"owen@example.com",   age:22, position:"Defender",   team:"t2", status:"approved", goals:1,  assists:2,  appearances:11, joined:"2026-03-05", bio:"Composed on the ball." },
+              { id:"p4", name:"Tariq Brooks",  email:"tariq@example.com",  age:29, position:"Forward",    team:"t2", status:"approved", goals:9,  assists:3,  appearances:12, joined:"2026-03-06", bio:"Physical presence up front." },
+              { id:"p5", name:"Felix Adeyemi", email:"felix@example.com",  age:25, position:"Goalkeeper", team:"t3", status:"approved", goals:0,  assists:0,  appearances:13, joined:"2026-03-09", bio:"Commanding shot-stopper." },
+              { id:"p6", name:"Caleb Nguyen",  email:"caleb@example.com",  age:23, position:"Midfielder", team:"t3", status:"approved", goals:7,  assists:8,  appearances:12, joined:"2026-03-10", bio:"Box-to-box midfielder." },
+              { id:"p7", name:"Dario Conti",   email:"dario@example.com",  age:26, position:"Defender",   team:"t4", status:"approved", goals:2,  assists:1,  appearances:10, joined:"2026-03-12", bio:"Aggressive tackler." },
+              { id:"p8", name:"Sam Whitfield", email:"sam@example.com",    age:31, position:"Forward",    team:"t4", status:"approved", goals:11, assists:4,  appearances:13, joined:"2026-03-12", bio:"Veteran striker." },
+            ],
+            matches: [
+              { id:"m1", date:"2026-05-02", home:"t1", away:"t3", homeScore:3, awayScore:1 },
+              { id:"m2", date:"2026-05-09", home:"t2", away:"t4", homeScore:2, awayScore:2 },
+              { id:"m3", date:"2026-05-16", home:"t3", away:"t4", homeScore:0, awayScore:1 },
+              { id:"m4", date:"2026-05-23", home:"t1", away:"t2", homeScore:4, awayScore:2 },
+            ],
+            admin: { username:"admin", password:"admin123" }
+          };
+        }
+
+        function fmtDate(d) {
+          return new Date(d + "T00:00:00").toLocaleDateString("en-US", { weekday:"short", month:"short", day:"numeric" });
+        }
+
+        function StatBar({ label, value, max, color }) {
+          const pct = Math.min(100, max ? (value / max) * 100 : 0);
+          return (
+            <div>
+              <div className="flex justify-between text-xs mb-1" style={{ fontFamily: fontMono }}>
+                <span className="opacity-60 uppercase tracking-wide">{label}</span>
+                <span className="font-bold">{value}</span>
               </div>
-              <div className="text-base font-semibold truncate" style={{ color: COLORS.ink }}>{player.name}</div>
-              <div className="text-xs uppercase tracking-widest mt-0.5" style={{ color: team ? team.color : COLORS.turf, fontFamily: fontMono }}>
-                {player.position}
+              <div className="h-1.5 rounded-full bg-neutral-200">
+                <div className="h-1.5 rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: color }} />
               </div>
             </div>
-          </div>
-          <div className="flex border-t text-xs" style={{ borderColor: COLORS.line, fontFamily: fontMono }}>
-            <div className="flex-1 text-center py-2"><div className="font-bold">{player.appearances}</div><div className="opacity-50">APP</div></div>
-            <div className="flex-1 text-center py-2 border-l" style={{ borderColor: COLORS.line }}><div className="font-bold">{player.goals}</div><div className="opacity-50">GLS</div></div>
-            <div className="flex-1 text-center py-2 border-l" style={{ borderColor: COLORS.line }}><div className="font-bold">{player.assists}</div><div className="opacity-50">AST</div></div>
-          </div>
-          <div className="px-4 pb-3 text-xs flex items-center gap-1 opacity-40" style={{ fontFamily: fontMono }}>
-            <User size={11} /> View profile
-          </div>
-        </button>
-      );
-    }
+          );
+        }
 
-    function Pill({ children, color }) {
-      return (
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ fontFamily: fontMono, color, border: `1px solid ${color}` }}>
-          {children}
-        </span>
-      );
-    }
-
-    function Field({ label, children }) {
-      return (
-        <label className="block">
-          <span className="block text-xs uppercase tracking-wide mb-1" style={{ color: COLORS.turf, fontFamily: fontMono }}>{label}</span>
-          {children}
-        </label>
-      );
-    }
-
-    const inputCls = "w-full rounded-lg border px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2";
-
-    function App() {
-      const [data, setData]           = useState(null);
-      const [loading, setLoading]     = useState(true);
-      const [view, setView]           = useState("home");
-      const [profilePlayer, setProfilePlayer] = useState(null); // player id for profile
-      const [profileFrom, setProfileFrom]     = useState("teams"); // which view to go back to
-      const [isAdmin, setIsAdmin]     = useState(false);
-      const [adminTab, setAdminTab]   = useState("pending");
-      const [showLogin, setShowLogin] = useState(false);
-      const [loginForm, setLoginForm] = useState({ username:"", password:"" });
-      const [loginError, setLoginError] = useState("");
-      const [regForm, setRegForm]     = useState({ name:"", email:"", age:"", position:"Midfielder", team:"" });
-      const [regSubmitted, setRegSubmitted] = useState(false);
-      const [adminMsg, setAdminMsg]   = useState("");
-      const [assignTeam, setAssignTeam] = useState({});
-      const [newTeam, setNewTeam]     = useState({ name:"", color: TEAM_COLORS[0] });
-      const [editTeam, setEditTeam]   = useState(null);
-      const [newMatch, setNewMatch]   = useState({ date: today(), home:"", away:"" });
-      const [editMatch, setEditMatch] = useState(null);
-      const [editPlayer, setEditPlayer] = useState(null);
-      const [creds, setCreds]         = useState({ username:"", password:"" });
-
-      useEffect(() => {
-        (async () => {
-          try {
-            const res = await window.storage.get("msl-data", true);
-            if (res && res.value) { setData(JSON.parse(res.value)); }
-            else {
-              const seed = buildSeed();
-              await window.storage.set("msl-data", JSON.stringify(seed), true);
-              setData(seed);
-            }
-          } catch (e) {
-            const seed = buildSeed();
-            try { await window.storage.set("msl-data", JSON.stringify(seed), true); } catch(e2){}
-            setData(seed);
-          } finally { setLoading(false); }
-        })();
-      }, []);
-
-      async function persist(newData) {
-        setData(newData);
-        try { await window.storage.set("msl-data", JSON.stringify(newData), true); } catch(e){ console.error(e); }
-      }
-
-      if (loading || !data) {
-        return <div className="min-h-screen flex items-center justify-center" style={{ background: COLORS.pitch, color: COLORS.chalk, fontFamily: fontMono }}>Loading league data…</div>;
-      }
-
-      const teamById       = (id) => data.teams.find((t) => t.id === id);
-      const approvedPlayers = data.players.filter((p) => p.status === "approved");
-      const pendingPlayers  = data.players.filter((p) => p.status === "pending");
-      const sortedScorers   = [...approvedPlayers].sort((a,b) => b.goals - a.goals || b.assists - a.assists);
-      const sortedMatches   = [...data.matches].sort((a,b) => a.date < b.date ? -1 : 1);
-      const upcoming        = sortedMatches.filter((m) => m.homeScore === null || m.homeScore === undefined);
-      const completed       = sortedMatches.filter((m) => !(m.homeScore === null || m.homeScore === undefined)).reverse();
-
-      function openProfile(playerId, from) {
-        setProfilePlayer(playerId);
-        setProfileFrom(from);
-        setView("profile");
-      }
-
-      function handleLogin() {
-        if (loginForm.username === data.admin.username && loginForm.password === data.admin.password) {
-          setIsAdmin(true); setShowLogin(false); setLoginError(""); setLoginForm({ username:"", password:"" }); setView("admin");
-        } else { setLoginError("Incorrect username or password."); }
-      }
-      function logout() { setIsAdmin(false); setView("home"); }
-
-      async function submitRegistration() {
-        if (!regForm.name.trim() || !regForm.email.trim()) return;
-        const newPlayer = { id:"p_"+Date.now(), name:regForm.name.trim(), email:regForm.email.trim(), age:regForm.age, position:regForm.position, preferredTeam:regForm.team||"", team:"", status:"pending", goals:0, assists:0, appearances:0, joined:today(), bio:"" };
-        await persist({ ...data, players:[...data.players, newPlayer] });
-        setRegSubmitted(true);
-        setRegForm({ name:"", email:"", age:"", position:"Midfielder", team:"" });
-      }
-
-      function approvePlayer(id) {
-        const teamId = assignTeam[id];
-        if (!teamId) { setAdminMsg("Pick a team before approving."); return; }
-        const newPlayers = data.players.map((p) => p.id===id ? {...p, status:"approved", team:teamId} : p);
-        persist({ ...data, players:newPlayers }); setAdminMsg("");
-      }
-      function rejectPlayer(id) { persist({ ...data, players:data.players.filter((p)=>p.id!==id) }); }
-      function addTeam() {
-        if (!newTeam.name.trim()) return;
-        persist({ ...data, teams:[...data.teams, { id:"t_"+Date.now(), name:newTeam.name.trim(), color:newTeam.color }] });
-        setNewTeam({ name:"", color:TEAM_COLORS[0] });
-      }
-      function saveTeam() { persist({ ...data, teams:data.teams.map((t)=>t.id===editTeam.id?editTeam:t) }); setEditTeam(null); }
-      function deleteTeam(id) {
-        if (data.players.some((p)=>p.team===id)) { setAdminMsg("Reassign or remove this team's players before deleting it."); return; }
-        persist({ ...data, teams:data.teams.filter((t)=>t.id!==id) }); setAdminMsg("");
-      }
-      function addMatch() {
-        if (!newMatch.home || !newMatch.away || newMatch.home===newMatch.away) { setAdminMsg("Pick two different teams for the fixture."); return; }
-        persist({ ...data, matches:[...data.matches, { id:"m_"+Date.now(), date:newMatch.date, home:newMatch.home, away:newMatch.away, homeScore:null, awayScore:null }] });
-        setNewMatch({ date:today(), home:"", away:"" }); setAdminMsg("");
-      }
-      function saveMatch() {
-        const hs = editMatch.homeScore===""?null:Number(editMatch.homeScore);
-        const as = editMatch.awayScore===""?null:Number(editMatch.awayScore);
-        persist({ ...data, matches:data.matches.map((m)=>m.id===editMatch.id?{...editMatch,homeScore:hs,awayScore:as}:m) });
-        setEditMatch(null);
-      }
-      function deleteMatch(id) { persist({ ...data, matches:data.matches.filter((m)=>m.id!==id) }); }
-      function saveEditPlayer() {
-        const updated = { ...editPlayer, goals:Number(editPlayer.goals)||0, assists:Number(editPlayer.assists)||0, appearances:Number(editPlayer.appearances)||0 };
-        persist({ ...data, players:data.players.map((p)=>p.id===updated.id?updated:p) });
-        setEditPlayer(null);
-      }
-      function removePlayer(id) { persist({ ...data, players:data.players.filter((p)=>p.id!==id) }); }
-      function saveCreds() {
-        if (!creds.username.trim()||!creds.password.trim()) return;
-        persist({ ...data, admin:{ username:creds.username.trim(), password:creds.password } });
-        setAdminMsg("Admin login updated."); setCreds({ username:"", password:"" });
-      }
-
-      const navItems = [["home","Home"],["teams","Teams"],["fixtures","Fixtures"],["stats","Stats"],["register","Register"]];
-
-      const profilePlayerObj = profilePlayer ? data.players.find((p)=>p.id===profilePlayer) : null;
-
-      return (
-        <div className="min-h-screen" style={{ background: COLORS.chalk, fontFamily:"'Inter', sans-serif", color: COLORS.ink }}>
-          <style>{`@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');`}</style>
-
-          {/* NAV */}
-          <header className="sticky top-0 z-30 shadow-md" style={{ background: COLORS.pitch }}>
-            <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-              <button onClick={()=>setView("home")} className="text-xl tracking-wide" style={{ fontFamily:fontDisplay, color:COLORS.chalk }}>
-                JAGUAR 🐆 <span style={{ color:COLORS.bright }}>FC</span>
+        function PlayerProfile({ player, team, allPlayers, matches, onBack }) {
+          const teamMatches = matches.filter(m => (m.home === player.team || m.away === player.team) && m.homeScore !== null);
+          const leagueMax = {
+            goals: Math.max(...allPlayers.map(p => p.goals), 1),
+            assists: Math.max(...allPlayers.map(p => p.assists), 1),
+            appearances: Math.max(...allPlayers.map(p => p.appearances), 1),
+          };
+          return (
+            <div>
+              <button onClick={onBack} className="flex items-center gap-1.5 text-sm mb-6 opacity-60 hover:opacity-100 transition-opacity" style={{ fontFamily: fontMono }}>
+                <ArrowLeft /> Back
               </button>
-              <nav className="flex items-center gap-1 flex-wrap justify-end">
-                {navItems.map(([key,label])=>(
-                  <button key={key} onClick={()=>setView(key)} className="text-sm px-2.5 py-1.5 rounded-md transition-colors"
-                    style={{ color:view===key&&view!=="profile"?COLORS.ink:COLORS.chalk, background:view===key&&view!=="profile"?COLORS.amber:"transparent" }}>
-                    {label}
-                  </button>
-                ))}
-                {isAdmin?(
-                  <div className="flex items-center gap-1 ml-1">
-                    <button onClick={()=>setView("admin")} className="text-sm px-2.5 py-1.5 rounded-md flex items-center gap-1"
-                      style={{ color:view==="admin"?COLORS.ink:COLORS.chalk, background:view==="admin"?COLORS.amber:"transparent" }}>
-                      <ShieldCheck size={14}/> Admin
-                    </button>
-                    <button onClick={logout} className="text-sm px-2 py-1.5 rounded-md flex items-center gap-1" style={{ color:COLORS.chalk }} title="Log out"><LogOut size={14}/></button>
-                  </div>
-                ):(
-                  <button onClick={()=>setShowLogin(true)} className="text-sm px-2.5 py-1.5 rounded-md flex items-center gap-1 opacity-80" style={{ color:COLORS.chalk }}>
-                    <Lock size={13}/> Admin
-                  </button>
-                )}
-              </nav>
-            </div>
-          </header>
-
-          {/* LOGIN MODAL */}
-          {showLogin&&(
-            <div className="fixed inset-0 z-40 flex items-center justify-center px-4" style={{ background:"rgba(11,26,20,0.6)" }} onClick={()=>setShowLogin(false)}>
-              <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl" onClick={(e)=>e.stopPropagation()}>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold flex items-center gap-2"><Lock size={18}/> Admin login</h2>
-                  <button onClick={()=>setShowLogin(false)}><X size={18}/></button>
-                </div>
-                <div className="space-y-3">
-                  <Field label="Username"><input className={inputCls} style={{ borderColor:COLORS.line }} value={loginForm.username} onChange={(e)=>setLoginForm({...loginForm,username:e.target.value})}/></Field>
-                  <Field label="Password"><input type="password" className={inputCls} style={{ borderColor:COLORS.line }} value={loginForm.password} onChange={(e)=>setLoginForm({...loginForm,password:e.target.value})}/></Field>
-                  {loginError&&<p className="text-sm" style={{ color:"#C62828" }}>{loginError}</p>}
-                  <button onClick={handleLogin} className="w-full rounded-lg py-2 font-semibold" style={{ background:COLORS.pitch, color:COLORS.chalk }}>Log in</button>
-                  <p className="text-xs text-center opacity-50">Demo credentials: admin / admin123</p>
+              <div className="rounded-2xl overflow-hidden mb-6 p-6 text-white" style={{ background: COLORS.pitch }}>
+                <h1 className="text-4xl" style={{ fontFamily: fontDisplay }}>{player.name}</h1>
+                <p className="text-xs uppercase tracking-widest opacity-70 mt-1">{player.position} · {team ? team.name : "Unassigned"}</p>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-6">
+                <div className="rounded-xl border p-5 space-y-4 bg-white">
+                  <h2 className="text-xs uppercase tracking-widest opacity-50 mb-3" style={{ fontFamily: fontMono }}>Season stats</h2>
+                  <StatBar label="Appearances" value={player.appearances} max={leagueMax.appearances} color={team?.color || COLORS.turf} />
+                  <StatBar label="Goals" value={player.goals} max={leagueMax.goals} color={COLORS.amber} />
+                  <StatBar label="Assists" value={player.assists} max={leagueMax.assists} color={COLORS.bright} />
                 </div>
               </div>
             </div>
-          )}
+          );
+        }
 
-          <main className="max-w-5xl mx-auto px-4 py-8">
+        function PlayerCard({ player, team, idx, onClick }) {
+          return (
+            <button onClick={onClick} className="relative rounded-xl overflow-hidden bg-white shadow-sm border text-left w-full transition-shadow hover:shadow-md p-4">
+              <div className="h-1 absolute top-0 left-0 right-0" style={{ background: team ? team.color : COLORS.bright }} />
+              <div className="text-sm font-bold opacity-40">#{String(idx + 1).padStart(2, "0")}</div>
+              <div className="text-lg font-semibold text-neutral-900 mt-1">{player.name}</div>
+              <div className="text-xs uppercase tracking-widest mt-0.5" style={{ color: team ? team.color : COLORS.turf, fontFamily: fontMono }}>{player.position}</div>
+            </button>
+          );
+        }
 
-            {/* ── PLAYER PROFILE ── */}
-            {view==="profile"&&profilePlayerObj&&(
-              <PlayerProfile
-                player={profilePlayerObj}
-                team={teamById(profilePlayerObj.team)}
-                allPlayers={approvedPlayers}
-                matches={data.matches}
-                onBack={()=>setView(profileFrom)}
-              />
-            )}
+        function App() {
+          const [data, setData] = React.useState(null);
+          const [view, setView] = React.useState("home");
+          const [profilePlayer, setProfilePlayer] = React.useState(null);
 
-            {/* ── HOME ── */}
-            {view==="home"&&(
-              <div className="space-y-10">
-                <section className="relative rounded-2xl overflow-hidden p-8 sm:p-12" style={{ background:COLORS.pitch }}>
-                  <div className="absolute right-[-60px] top-1/2 -translate-y-1/2 w-72 h-72 rounded-full border-2 opacity-20 pointer-events-none" style={{ borderColor:COLORS.bright }}/>
-                  <p className="text-xs uppercase tracking-[0.2em] mb-3" style={{ color:COLORS.bright, fontFamily:fontMono }}>Amateur League — Est. 2026</p>
-                  <h1 className="text-4xl sm:text-5xl leading-tight max-w-md" style={{ fontFamily:fontDisplay, color:COLORS.chalk }}>WHERE YOUR SEASON BEGINS</h1>
-                  <p className="mt-3 max-w-sm" style={{ color:COLORS.line }}>Four clubs, one table, every Saturday. Register as a player and the league office will assign you to a club.</p>
-                  <div className="mt-6 flex gap-3 flex-wrap">
-                    <button onClick={()=>setView("register")} className="px-5 py-2.5 rounded-lg font-semibold" style={{ background:COLORS.amber, color:COLORS.ink }}>Register to play</button>
-                    <button onClick={()=>setView("fixtures")} className="px-5 py-2.5 rounded-lg font-semibold border" style={{ borderColor:COLORS.chalk, color:COLORS.chalk }}>View fixtures</button>
-                  </div>
-                </section>
-                <section className="grid grid-cols-3 gap-3 text-center">
-                  {[["Clubs",data.teams.length],["Registered players",approvedPlayers.length],["Matches played",completed.length]].map(([label,val])=>(
-                    <div key={label} className="rounded-xl p-4 border" style={{ borderColor:COLORS.line }}>
-                      <div className="text-3xl" style={{ fontFamily:fontDisplay }}>{val}</div>
-                      <div className="text-xs uppercase tracking-wide mt-1 opacity-60" style={{ fontFamily:fontMono }}>{label}</div>
-                    </div>
-                  ))}
-                </section>
-                {sortedScorers[0]&&(
-                  <section>
-                    <h2 className="text-sm uppercase tracking-widest mb-3 opacity-60" style={{ fontFamily:fontMono }}>Top scorer</h2>
-                    <div className="max-w-xs">
-                      <PlayerCard player={sortedScorers[0]} team={teamById(sortedScorers[0].team)} idx={0} onClick={()=>openProfile(sortedScorers[0].id,"home")}/>
-                    </div>
-                  </section>
-                )}
-                {upcoming[0]&&(
-                  <section>
-                    <h2 className="text-sm uppercase tracking-widest mb-3 opacity-60" style={{ fontFamily:fontMono }}>Next match</h2>
-                    <div className="rounded-xl border p-5 flex items-center justify-between" style={{ borderColor:COLORS.line }}>
-                      <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full" style={{ background:teamById(upcoming[0].home)?.color }}/><span className="font-semibold">{teamById(upcoming[0].home)?.name}</span></div>
-                      <div className="text-xs opacity-60" style={{ fontFamily:fontMono }}>{fmtDate(upcoming[0].date)}</div>
-                      <div className="flex items-center gap-2"><span className="font-semibold">{teamById(upcoming[0].away)?.name}</span><span className="w-3 h-3 rounded-full" style={{ background:teamById(upcoming[0].away)?.color }}/></div>
-                    </div>
-                  </section>
-                )}
-              </div>
-            )}
+          React.useEffect(() => {
+            storageEngine.get("msl-data").then(res => {
+              if (res && res.value) { setData(JSON.parse(res.value)); } 
+              else {
+                const seed = buildSeed();
+                storageEngine.set("msl-data", JSON.stringify(seed));
+                setData(seed);
+              }
+            });
+          }, []);
 
-            {/* ── TEAMS ── */}
-            {view==="teams"&&(
-              <div className="space-y-8">
-                <h1 className="text-3xl" style={{ fontFamily:fontDisplay }}>Clubs &amp; rosters</h1>
-                {data.teams.map((team)=>{
-                  const roster=approvedPlayers.filter((p)=>p.team===team.id);
-                  return(
-                    <div key={team.id}>
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="w-3 h-3 rounded-full" style={{ background:team.color }}/>
-                        <h2 className="text-lg font-semibold">{team.name}</h2>
-                        <span className="text-xs opacity-50" style={{ fontFamily:fontMono }}>{roster.length} players</span>
-                      </div>
-                      {roster.length===0?<p className="text-sm opacity-50">No players assigned yet.</p>:(
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                          {roster.map((p,i)=><PlayerCard key={p.id} player={p} team={team} idx={i} onClick={()=>openProfile(p.id,"teams")}/>)}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+          if (!data) return <div className="p-8 text-center font-mono">Loading dynamic dashboard...</div>;
 
-            {/* ── FIXTURES ── */}
-            {view==="fixtures"&&(
-              <div className="space-y-8">
-                <h1 className="text-3xl" style={{ fontFamily:fontDisplay }}>Fixtures</h1>
-                <div>
-                  <h2 className="text-sm uppercase tracking-widest mb-3 opacity-60" style={{ fontFamily:fontMono }}>Upcoming</h2>
-                  <div className="space-y-2">
-                    {upcoming.length===0&&<p className="text-sm opacity-50">No upcoming matches scheduled.</p>}
-                    {upcoming.map((m)=>(
-                      <div key={m.id} className="rounded-lg border px-4 py-3 flex items-center justify-between text-sm" style={{ borderColor:COLORS.line }}>
-                        <span className="opacity-60 w-20" style={{ fontFamily:fontMono }}>{fmtDate(m.date)}</span>
-                        <span className="flex-1 text-center font-medium">{teamById(m.home)?.name} vs {teamById(m.away)?.name}</span>
-                        <Pill color={COLORS.amber}>UPCOMING</Pill>
-                      </div>
-                    ))}
-                  </div>
+          const approvedPlayers = data.players.filter(p => p.status === "approved");
+          const teamById = (id) => data.teams.find(t => t.id === id);
+          const profilePlayerObj = data.players.find(p => p.id === profilePlayer);
+
+          return (
+            <div className="min-h-screen bg-slate-50">
+              <header className="p-4 text-white flex justify-between items-center" style={{ background: COLORS.pitch }}>
+                <button onClick={() => setView("home")} className="text-2xl font-bold tracking-wider" style={{ fontFamily: fontDisplay }}>JAGUAR 🐆 FC</button>
+                <div className="flex gap-4 text-sm font-medium">
+                  <button onClick={() => setView("home")}>Home</button>
+                  <button onClick={() => setView("teams")}>Clubs</button>
                 </div>
-                <div>
-                  <h2 className="text-sm uppercase tracking-widest mb-3 opacity-60" style={{ fontFamily:fontMono }}>Results</h2>
-                  <div className="space-y-2">
-                    {completed.length===0&&<p className="text-sm opacity-50">No completed matches yet.</p>}
-                    {completed.map((m)=>(
-                      <div key={m.id} className="rounded-lg border px-4 py-3 flex items-center justify-between text-sm" style={{ borderColor:COLORS.line }}>
-                        <span className="opacity-60 w-20" style={{ fontFamily:fontMono }}>{fmtDate(m.date)}</span>
-                        <span className="flex-1 text-center font-medium">{teamById(m.home)?.name} <span style={{ fontFamily:fontMono }}>{m.homeScore}–{m.awayScore}</span> {teamById(m.away)?.name}</span>
-                        <Pill color={COLORS.turf}>FULL TIME</Pill>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+              </header>
 
-            {/* ── STATS ── */}
-            {view==="stats"&&(
-              <div>
-                <h1 className="text-3xl mb-5" style={{ fontFamily:fontDisplay }}>Leaderboard</h1>
-                <div className="rounded-xl border overflow-hidden" style={{ borderColor:COLORS.line }}>
-                  <div className="grid grid-cols-12 px-4 py-2 text-xs uppercase tracking-wide" style={{ background:COLORS.pitch, color:COLORS.chalk, fontFamily:fontMono }}>
-                    <div className="col-span-1">#</div><div className="col-span-5">Player</div>
-                    <div className="col-span-2 text-center">App</div><div className="col-span-2 text-center" style={{ color:COLORS.amber }}>Gls</div><div className="col-span-2 text-center">Ast</div>
-                  </div>
-                  {sortedScorers.map((p,i)=>(
-                    <button key={p.id} onClick={()=>openProfile(p.id,"stats")} className="grid grid-cols-12 px-4 py-2.5 text-sm items-center border-t w-full text-left hover:bg-green-50 transition-colors" style={{ borderColor:COLORS.line, background:i%2?"rgba(82,183,136,0.06)":"white" }}>
-                      <div className="col-span-1 opacity-50" style={{ fontFamily:fontMono }}>{i+1}</div>
-                      <div className="col-span-5 flex items-center gap-2"><Avatar player={p} team={teamById(p.team)} size={28}/><div><span className="font-medium">{p.name}</span><span className="block text-xs opacity-50">{teamById(p.team)?.name}</span></div></div>
-                      <div className="col-span-2 text-center" style={{ fontFamily:fontMono }}>{p.appearances}</div>
-                      <div className="col-span-2 text-center font-bold" style={{ fontFamily:fontMono, color:COLORS.turf }}>{p.goals}</div>
-                      <div className="col-span-2 text-center" style={{ fontFamily:fontMono }}>{p.assists}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ── REGISTER ── */}
-            {view==="register"&&(
-              <div className="max-w-md">
-                <h1 className="text-3xl mb-2" style={{ fontFamily:fontDisplay }}>Player registration</h1>
-                <p className="text-sm opacity-60 mb-6">Submit your details below. An admin will review your registration and assign you to a club.</p>
-                {regSubmitted?(
-                  <div className="rounded-xl border p-6 text-center" style={{ borderColor:COLORS.bright }}>
-                    <Check className="mx-auto mb-2" style={{ color:COLORS.turf }}/>
-                    <p className="font-medium">Registration received.</p>
-                    <p className="text-sm opacity-60 mt-1">It's pending review from the league admin.</p>
-                    <button onClick={()=>setRegSubmitted(false)} className="mt-4 text-sm underline">Register another player</button>
-                  </div>
-                ):(
-                  <div className="space-y-4">
-                    <Field label="Full name"><input required className={inputCls} style={{ borderColor:COLORS.line }} value={regForm.name} onChange={(e)=>setRegForm({...regForm,name:e.target.value})}/></Field>
-                    <Field label="Email"><input required type="email" className={inputCls} style={{ borderColor:COLORS.line }} value={regForm.email} onChange={(e)=>setRegForm({...regForm,email:e.target.value})}/></Field>
-                    <Field label="Age"><input type="number" min="4" max="90" className={inputCls} style={{ borderColor:COLORS.line }} value={regForm.age} onChange={(e)=>setRegForm({...regForm,age:e.target.value})}/></Field>
-                    <Field label="Position">
-                      <select className={inputCls} style={{ borderColor:COLORS.line }} value={regForm.position} onChange={(e)=>setRegForm({...regForm,position:e.target.value})}>
-                        {POSITIONS.map((p)=><option key={p}>{p}</option>)}
-                      </select>
-                    </Field>
-                    <Field label="Preferred club (optional)">
-                      <select className={inputCls} style={{ borderColor:COLORS.line }} value={regForm.team} onChange={(e)=>setRegForm({...regForm,team:e.target.value})}>
-                        <option value="">No preference</option>
-                        {data.teams.map((t)=><option key={t.id} value={t.id}>{t.name}</option>)}
-                      </select>
-                    </Field>
-                    <button onClick={submitRegistration} className="w-full rounded-lg py-2.5 font-semibold" style={{ background:COLORS.pitch, color:COLORS.chalk }}>Submit registration</button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ── ADMIN ── */}
-            {view==="admin"&&isAdmin&&(
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <h1 className="text-3xl" style={{ fontFamily:fontDisplay }}>Admin dashboard</h1>
-                  <button onClick={logout} className="text-sm flex items-center gap-1 opacity-70"><LogOut size={14}/> Log out</button>
-                </div>
-                <div className="flex gap-2 flex-wrap mb-6">
-                  {[["pending",`Pending (${pendingPlayers.length})`],["teams","Teams"],["fixtures","Fixtures"],["players","Players & stats"],["account","Account"]].map(([k,l])=>(
-                    <button key={k} onClick={()=>{setAdminTab(k);setAdminMsg("");}} className="text-sm px-3 py-1.5 rounded-md"
-                      style={{ background:adminTab===k?COLORS.pitch:"transparent", color:adminTab===k?COLORS.chalk:COLORS.ink, border:`1px solid ${COLORS.line}` }}>{l}</button>
-                  ))}
-                </div>
-                {adminMsg&&<div className="mb-4 text-sm rounded-lg px-3 py-2" style={{ background:"#FFF3CD", color:"#7A5B00" }}>{adminMsg}</div>}
-
-                {adminTab==="pending"&&(
-                  <div className="space-y-3">
-                    {pendingPlayers.length===0&&<p className="text-sm opacity-50">No pending registrations.</p>}
-                    {pendingPlayers.map((p)=>(
-                      <div key={p.id} className="rounded-lg border p-4" style={{ borderColor:COLORS.line }}>
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div>
-                            <p className="font-medium">{p.name} <span className="text-xs opacity-50">· {p.position} · age {p.age||"—"}</span></p>
-                            <p className="text-xs opacity-50">{p.email} · requested {fmtDate(p.joined)}{p.preferredTeam?` · prefers ${teamById(p.preferredTeam)?.name}`:""}</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <select className="text-sm rounded-md border px-2 py-1" style={{ borderColor:COLORS.line }} value={assignTeam[p.id]||p.preferredTeam||""} onChange={(e)=>setAssignTeam({...assignTeam,[p.id]:e.target.value})}>
-                              <option value="">Assign club…</option>
-                              {data.teams.map((t)=><option key={t.id} value={t.id}>{t.name}</option>)}
-                            </select>
-                            <button onClick={()=>approvePlayer(p.id)} className="px-3 py-1.5 rounded-md text-sm font-semibold" style={{ background:COLORS.turf, color:"white" }}>Approve</button>
-                            <button onClick={()=>rejectPlayer(p.id)} className="px-3 py-1.5 rounded-md text-sm" style={{ border:`1px solid ${COLORS.line}` }}>Reject</button>
+              <main className="max-w-4xl mx-auto p-6">
+                {view === "profile" && profilePlayerObj ? (
+                  <PlayerProfile player={profilePlayerObj} team={teamById(profilePlayerObj.team)} allPlayers={approvedPlayers} matches={data.matches} onBack={() => setView("teams")} />
+                ) : view === "teams" ? (
+                  <div className="space-y-6">
+                    <h1 className="text-3xl font-bold" style={{ fontFamily: fontDisplay }}>Clubs & Rosters</h1>
+                    {data.teams.map(team => {
+                      const roster = approvedPlayers.filter(p => p.team === team.id);
+                      return (
+                        <div key={team.id} className="bg-white p-4 rounded-xl border">
+                          <h2 className="text-xl font-bold flex items-center gap-2 mb-3"><span className="w-3 h-3 rounded-full" style={{ background: team.color }}/>{team.name}</h2>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {roster.map((p, i) => <PlayerCard key={p.id} player={p} team={team} idx={i} onClick={() => { setProfilePlayer(p.id); setView("profile"); }} />)}
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <section className="p-8 text-white rounded-2xl" style={{ background: COLORS.pitch }}>
+                      <h1 className="text-4xl mb-2" style={{ fontFamily: fontDisplay }}>WHERE YOUR SEASON BEGINS</h1>
+                      <p className="opacity-80 max-w-md text-sm">Four clubs, one table, every Saturday. Tap Clubs on the top nav menu to view player profiles.</p>
+                    </section>
                   </div>
                 )}
+              </main>
+            </div>
+          );
+        }
 
-                {adminTab==="teams"&&(
-                  <div className="space-y-3">
-                    {data.teams.map((t)=>(
-                      <div key={t.id} className="rounded-lg border p-3 flex items-center gap-3" style={{ borderColor:COLORS.line }}>
-                        {editTeam&&editTeam.id===t.id?(
-                          <>
-                            <input className="rounded-md border px-2 py-1 text-sm flex-1" style={{ borderColor:COLORS.line }} value={editTeam.name} onChange={(e)=>setEditTeam({...editTeam,name:e.target.value})}/>
-                            <div className="flex gap-1">{TEAM_COLORS.map((c)=><button key={c} onClick={()=>setEditTeam({...editTeam,color:c})} className="w-5 h-5 rounded-full" style={{ background:c, outline:editTeam.color===c?`2px solid ${COLORS.ink}`:"none" }}/>)}</div>
-                            <button onClick={saveTeam}><Check size={16}/></button><button onClick={()=>setEditTeam(null)}><X size={16}/></button>
-                          </>
-                        ):(
-                          <>
-                            <span className="w-3 h-3 rounded-full" style={{ background:t.color }}/>
-                            <span className="flex-1 font-medium">{t.name}</span>
-                            <span className="text-xs opacity-50">{data.players.filter((p)=>p.team===t.id).length} players</span>
-                            <button onClick={()=>setEditTeam(t)}><Pencil size={15}/></button>
-                            <button onClick={()=>deleteTeam(t.id)}><Trash2 size={15}/></button>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                    <div className="rounded-lg border p-3 flex items-center gap-2 flex-wrap" style={{ borderColor:COLORS.line }}>
-                      <input placeholder="New club name" className="rounded-md border px-2 py-1.5 text-sm flex-1 min-w-[140px]" style={{ borderColor:COLORS.line }} value={newTeam.name} onChange={(e)=>setNewTeam({...newTeam,name:e.target.value})}/>
-                      <div className="flex gap-1">{TEAM_COLORS.map((c)=><button key={c} onClick={()=>setNewTeam({...newTeam,color:c})} className="w-5 h-5 rounded-full" style={{ background:c, outline:newTeam.color===c?`2px solid ${COLORS.ink}`:"none" }}/>)}</div>
-                      <button onClick={addTeam} className="px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1" style={{ background:COLORS.pitch, color:COLORS.chalk }}><Plus size={14}/> Add club</button>
-                    </div>
-                  </div>
-                )}
-
-                {adminTab==="fixtures"&&(
-                  <div className="space-y-3">
-                    {sortedMatches.map((m)=>(
-                      <div key={m.id} className="rounded-lg border p-3" style={{ borderColor:COLORS.line }}>
-                        {editMatch&&editMatch.id===m.id?(
-                          <div className="flex flex-wrap items-center gap-2">
-                            <input type="date" className="rounded-md border px-2 py-1 text-sm" style={{ borderColor:COLORS.line }} value={editMatch.date} onChange={(e)=>setEditMatch({...editMatch,date:e.target.value})}/>
-                            <select className="rounded-md border px-2 py-1 text-sm" style={{ borderColor:COLORS.line }} value={editMatch.home} onChange={(e)=>setEditMatch({...editMatch,home:e.target.value})}>{data.teams.map((t)=><option key={t.id} value={t.id}>{t.name}</option>)}</select>
-                            <input type="number" placeholder="Score" className="rounded-md border px-2 py-1 text-sm w-16" style={{ borderColor:COLORS.line }} value={editMatch.homeScore??""} onChange={(e)=>setEditMatch({...editMatch,homeScore:e.target.value})}/>
-                            <span className="opacity-50">vs</span>
-                            <select className="rounded-md border px-2 py-1 text-sm" style={{ borderColor:COLORS.line }} value={editMatch.away} onChange={(e)=>setEditMatch({...editMatch,away:e.target.value})}>{data.teams.map((t)=><option key={t.id} value={t.id}>{t.name}</option>)}</select>
-                            <input type="number" placeholder="Score" className="rounded-md border px-2 py-1 text-sm w-16" style={{ borderColor:COLORS.line }} value={editMatch.awayScore??""} onChange={(e)=>setEditMatch({...editMatch,awayScore:e.target.value})}/>
-                            <button onClick={saveMatch}><Check size={16}/></button><button onClick={()=>setEditMatch(null)}><X size={16}/></button>
-                          </div>
-                        ):(
-                          <div className="flex items-center justify-between flex-wrap gap-2">
-                            <span className="text-xs opacity-50 w-20" style={{ fontFamily:fontMono }}>{fmtDate(m.date)}</span>
-                            <span className="flex-1 text-sm font-medium">{teamById(m.home)?.name} {m.homeScore??"–"} : {m.awayScore??"–"} {teamById(m.away)?.name}</span>
-                            <button onClick={()=>setEditMatch({...m})}><Pencil size={15}/></button>
-                            <button onClick={()=>deleteMatch(m.id)}><Trash2 size={15}/></button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                    <div className="rounded-lg border p-3 flex items-center gap-2 flex-wrap" style={{ borderColor:COLORS.line }}>
-                      <input type="date" className="rounded-md border px-2 py-1.5 text-sm" style={{ borderColor:COLORS.line }} value={newMatch.date} onChange={(e)=>setNewMatch({...newMatch,date:e.target.value})}/>
-                      <select className="rounded-md border px-2 py-1.5 text-sm" style={{ borderColor:COLORS.line }} value={newMatch.home} onChange={(e)=>setNewMatch({...newMatch,home:e.target.value})}>
-                        <option value="">Home club…</option>{data.teams.map((t)=><option key={t.id} value={t.id}>{t.name}</option>)}
-                      </select>
-                      <select className="rounded-md border px-2 py-1.5 text-sm" style={{ borderColor:COLORS.line }} value={newMatch.away} onChange={(e)=>setNewMatch({...newMatch,away:e.target.value})}>
-                        <option value="">Away club…</option>{data.teams.map((t)=><option key={t.id} value={t.id}>{t.name}</option>)}
-                      </select>
-                      <button onClick={addMatch} className="px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1" style={{ background:COLORS.pitch, color:COLORS.chalk }}><Plus size={14}/> Add fixture</button>
-                    </div>
-                  </div>
-                )}
-
-                {adminTab==="players"&&(
-                  <div className="space-y-2">
-                    {approvedPlayers.map((p)=>(
-                      <div key={p.id} className="rounded-lg border p-3" style={{ borderColor:COLORS.line }}>
-                        {editPlayer&&editPlayer.id===p.id?(
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-3">
-                              <Avatar player={editPlayer} team={teamById(editPlayer.team)} size={40} />
-                              <label className="cursor-pointer text-xs px-3 py-1.5 rounded-md border flex items-center gap-1" style={{ borderColor: COLORS.line, fontFamily: fontMono }}>
-                                📷 Upload photo
-                                <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                                  const file = e.target.files[0];
-                                  if (!file) return;
-                                  const b64 = await resizeToBase64(file);
-                                  setEditPlayer({ ...editPlayer, avatar: b64 });
-                                }} />
-                              </label>
-                              {editPlayer.avatar && (
-                                <button onClick={() => setEditPlayer({ ...editPlayer, avatar: "" })} className="text-xs opacity-50 hover:opacity-100" title="Remove photo"><X size={14} /></button>
-                              )}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2 text-sm">
-                              <span className="font-medium w-32">{p.name}</span>
-                              <select className="rounded-md border px-2 py-1" style={{ borderColor:COLORS.line }} value={editPlayer.team} onChange={(e)=>setEditPlayer({...editPlayer,team:e.target.value})}>{data.teams.map((t)=><option key={t.id} value={t.id}>{t.name}</option>)}</select>
-                              <input type="number" className="rounded-md border px-2 py-1 w-16" style={{ borderColor:COLORS.line }} value={editPlayer.appearances} onChange={(e)=>setEditPlayer({...editPlayer,appearances:e.target.value})} title="Appearances"/>
-                              <input type="number" className="rounded-md border px-2 py-1 w-16" style={{ borderColor:COLORS.line }} value={editPlayer.goals} onChange={(e)=>setEditPlayer({...editPlayer,goals:e.target.value})} title="Goals"/>
-                              <input type="number" className="rounded-md border px-2 py-1 w-16" style={{ borderColor:COLORS.line }} value={editPlayer.assists} onChange={(e)=>setEditPlayer({...editPlayer,assists:e.target.value})} title="Assists"/>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <input placeholder="Player bio…" className="rounded-md border px-2 py-1 text-sm flex-1" style={{ borderColor:COLORS.line }} value={editPlayer.bio||""} onChange={(e)=>setEditPlayer({...editPlayer,bio:e.target.value})}/>
-                              <button onClick={saveEditPlayer}><Check size={16}/></button>
-                              <button onClick={()=>setEditPlayer(null)}><X size={16}/></button>
-                            </div>
-                          </div>
-                        ):(
-                          <div className="flex items-center justify-between flex-wrap gap-2 text-sm">
-                            <button className="font-medium w-36 text-left hover:underline" style={{ color:COLORS.turf }} onClick={()=>openProfile(p.id,"admin")}>{p.name}</button>
-                            <span className="opacity-60 w-32">{teamById(p.team)?.name}</span>
-                            <span style={{ fontFamily:fontMono }} className="opacity-70">App {p.appearances} · Gls {p.goals} · Ast {p.assists}</span>
-                            <button onClick={()=>setEditPlayer({...p})}><Pencil size={15}/></button>
-                            <button onClick={()=>removePlayer(p.id)}><Trash2 size={15}/></button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {adminTab==="account"&&(
-                  <div className="max-w-sm space-y-4">
-                    <p className="text-sm opacity-60">Current login: <strong>{data.admin.username}</strong></p>
-                    <Field label="New username"><input className={inputCls} style={{ borderColor:COLORS.line }} value={creds.username} onChange={(e)=>setCreds({...creds,username:e.target.value})}/></Field>
-                    <Field label="New password"><input type="password" className={inputCls} style={{ borderColor:COLORS.line }} value={creds.password} onChange={(e)=>setCreds({...creds,password:e.target.value})}/></Field>
-                    <button onClick={saveCreds} className="px-4 py-2 rounded-lg font-semibold" style={{ background:COLORS.pitch, color:COLORS.chalk }}>Save login</button>
-                    <p className="text-xs opacity-50">This is a demo-level login meant to gate the editing UI, not a secure production auth system.</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </main>
-
-          <footer className="text-center text-xs py-8 opacity-50" style={{ fontFamily:fontMono }}>Jaguar 🐆 FC · est. 2026</footer>
-        </div>
-      );
-    }
-
-    // Render the App component inside the root container
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+        const root = tragedies = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
